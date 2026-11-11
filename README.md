@@ -87,14 +87,13 @@ saat pemeriksaan; jalankan kembali perintah di atas setelah setup selesai.
 ChatGPT Codex digunakan untuk membaca panduan Tutorial 08, membuat struktur
 proyek Flutter, menyusun widget halaman dan tes, menyesuaikan layout,
 menjalankan pemeriksaan yang tersedia, serta menyusun README.
+Riwayat Chat: https://chatgpt.com/share/6af470e5-7b8c-83ec-a674-d4c284b07c5b
 
 ### Ringkasan Prompt
 
 - “an extension off the 'Continue PBP Dev' but for flutter. do the tasks from
   the tutorial”, disertai halaman Tutorial 08.
 - Tautan Tutorial 08 diberikan kembali untuk memastikan spesifikasi yang diikuti.
-- “readme ikuti seperti repo myportofolio, tapi untuk mobile. ubah dan hapus
-  history readme sebelumnya” untuk menyesuaikan dokumentasi proyek.
 
 ### Strategi Prompting
 
