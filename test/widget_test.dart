@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
+import 'package:myportofolio_mobile/menu.dart';
 
 void main() {
-  testWidgets('shows the tutorial profile and menu', (tester) async {
+  testWidgets('shows the owner profile and menu', (tester) async {
     await tester.pumpWidget(const MyApp());
     for (final text in [
       'MyPortfolio',
-      '2406000001',
-      'Burhan',
-      'PBP A',
+      '2506657005',
+      'Mohammad Adzka Aulia',
+      'PBP F',
       'Selamat datang di MyPortfolio Mobile!',
       'Lihat Proyek',
       'Tambah Proyek',
@@ -18,6 +19,25 @@ void main() {
       expect(find.text(text), findsOneWidget);
     }
     expect(find.byType(FloatingActionButton), findsNothing);
+  });
+
+  testWidgets('action cards have distinct readable backgrounds', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+    final cards = tester.widgetList<Material>(
+      find.descendant(
+        of: find.byType(ItemCard),
+        matching: find.byType(Material),
+      ),
+    );
+    expect(cards, hasLength(3));
+    expect(cards.map((card) => card.color).toSet(), hasLength(3));
+    for (final card in cards) {
+      expect(card.color, isNotNull);
+      final contrast = 1.05 / (card.color!.computeLuminance() + 0.05);
+      expect(contrast, greaterThanOrEqualTo(4.5));
+    }
   });
 
   testWidgets(

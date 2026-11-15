@@ -4,13 +4,13 @@ class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
 
   final String npm = '2506657005';
-  final String nama = 'Adzka';
-  final String kelas = 'PBP B';
+  final String nama = 'Mohammad Adzka Aulia';
+  final String kelas = 'PBP F';
 
   final List<ItemHomepage> items = [
-    ItemHomepage('Lihat Proyek', Icons.folder),
-    ItemHomepage('Tambah Proyek', Icons.add_circle),
-    ItemHomepage('Logout', Icons.logout),
+    ItemHomepage('Lihat Proyek', Icons.folder, Colors.blue.shade800),
+    ItemHomepage('Tambah Proyek', Icons.add_circle, Colors.green.shade800),
+    ItemHomepage('Logout', Icons.logout, Colors.red.shade800),
   ];
 
   @override
@@ -65,7 +65,7 @@ class MyHomePage extends StatelessWidget {
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                     crossAxisCount: 3,
-                    mainAxisExtent: 120,
+                    mainAxisExtent: 140,
                     shrinkWrap: true,
                     children: items.map((item) => ItemCard(item)).toList(),
                   ),
@@ -106,8 +106,9 @@ class InfoCard extends StatelessWidget {
 class ItemHomepage {
   final String name;
   final IconData icon;
+  final Color color;
 
-  ItemHomepage(this.name, this.icon);
+  ItemHomepage(this.name, this.icon, this.color);
 }
 
 class ItemCard extends StatelessWidget {
@@ -118,7 +119,7 @@ class ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).colorScheme.secondary,
+      color: item.color,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
