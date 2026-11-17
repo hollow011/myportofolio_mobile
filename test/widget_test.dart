@@ -55,6 +55,10 @@ void main() {
             findsNothing,
           );
         }
+        if (label == 'Tambah Proyek') {
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+        }
         previous = label;
       }
     },
