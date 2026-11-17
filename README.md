@@ -95,29 +95,29 @@ masing-masing menu; `ItemCard` memakainya langsung tanpa percabangan nama tombol
 
    Berikut widget yang digunakan secara langsung dalam kode aplikasi:
 
-   | Widget | Fungsi dalam proyek |
-   | --- | --- |
-   | `MyApp` | Widget buatan proyek yang menyiapkan konfigurasi aplikasi. |
-   | `MaterialApp` | Menetapkan judul, tema, dan halaman awal aplikasi Material. |
-   | `MyHomePage` | Menyusun halaman profil dan menu portofolio. |
-   | `Scaffold` | Menyediakan kerangka halaman dengan app bar dan body. |
-   | `AppBar` | Menampilkan judul MyPortfolio di bagian atas. |
-   | `SingleChildScrollView` | Membuat body bisa digulir ketika melebihi tinggi layar. |
-   | `Padding` | Memberi ruang di sekitar isi widget. |
-   | `Column` | Menyusun bagian halaman serta isi kartu secara vertikal. |
-   | `Row` | Menyusun tiga kartu profil secara horizontal. |
-   | `Expanded` | Membagi lebar yang tersedia secara merata untuk kartu profil. |
-   | `InfoCard` | Komponen buatan proyek untuk satu pasangan label dan nilai profil. |
-   | `Card` | Memberi permukaan kartu dan elevasi pada informasi profil. |
-   | `Text` | Menampilkan judul, identitas, label tombol, dan pesan. |
-   | `SizedBox` | Memberi jarak vertikal antarbagian. |
-   | `Center` | Menempatkan anak di tengah ruang yang tersedia. |
-   | `GridView.count` | Menyusun tiga kartu aksi dalam tiga kolom. |
-   | `ItemCard` | Komponen buatan proyek untuk satu aksi portofolio. |
-   | `Material` | Menyediakan permukaan berwarna dan tempat efek tinta tombol. |
-   | `InkWell` | Menangani tap serta memberi umpan balik sentuhan. |
-   | `Icon` | Menampilkan simbol folder, tambah, dan logout. |
-   | `SnackBar` | Menampilkan pesan sementara sesuai tombol yang ditekan. |
+   | Widget                  | Fungsi dalam proyek                                                |
+   | ----------------------- | ------------------------------------------------------------------ |
+   | `MyApp`                 | Widget buatan proyek yang menyiapkan konfigurasi aplikasi.         |
+   | `MaterialApp`           | Menetapkan judul, tema, dan halaman awal aplikasi Material.        |
+   | `MyHomePage`            | Menyusun halaman profil dan menu portofolio.                       |
+   | `Scaffold`              | Menyediakan kerangka halaman dengan app bar dan body.              |
+   | `AppBar`                | Menampilkan judul MyPortfolio di bagian atas.                      |
+   | `SingleChildScrollView` | Membuat body bisa digulir ketika melebihi tinggi layar.            |
+   | `Padding`               | Memberi ruang di sekitar isi widget.                               |
+   | `Column`                | Menyusun bagian halaman serta isi kartu secara vertikal.           |
+   | `Row`                   | Menyusun tiga kartu profil secara horizontal.                      |
+   | `Expanded`              | Membagi lebar yang tersedia secara merata untuk kartu profil.      |
+   | `InfoCard`              | Komponen buatan proyek untuk satu pasangan label dan nilai profil. |
+   | `Card`                  | Memberi permukaan kartu dan elevasi pada informasi profil.         |
+   | `Text`                  | Menampilkan judul, identitas, label tombol, dan pesan.             |
+   | `SizedBox`              | Memberi jarak vertikal antarbagian.                                |
+   | `Center`                | Menempatkan anak di tengah ruang yang tersedia.                    |
+   | `GridView.count`        | Menyusun tiga kartu aksi dalam tiga kolom.                         |
+   | `ItemCard`              | Komponen buatan proyek untuk satu aksi portofolio.                 |
+   | `Material`              | Menyediakan permukaan berwarna dan tempat efek tinta tombol.       |
+   | `InkWell`               | Menangani tap serta memberi umpan balik sentuhan.                  |
+   | `Icon`                  | Menampilkan simbol folder, tambah, dan logout.                     |
+   | `SnackBar`              | Menampilkan pesan sementara sesuai tombol yang ditekan.            |
 
    `Theme` dan `ScaffoldMessenger` juga digunakan melalui `.of(context)` untuk
    memperoleh tema dan pengelola SnackBar dari ancestor. Keduanya tidak dibuat
@@ -194,7 +194,6 @@ masing-masing menu; `ItemCard` memakainya langsung tanpa percabangan nama tombol
    Hot reload dan hot restart tersedia untuk pengembangan dalam debug mode.
    Lihat [panduan hot reload](https://docs.flutter.dev/tools/hot-reload).
 
-
 ### Pemeriksaan
 
 ```sh
@@ -250,7 +249,6 @@ submisi SCELE yang belum dibuktikan.
 - Meminta implementasi langsung pada repositori Flutter yang terpisah.
 - Menggunakan README proyek web sebagai acuan struktur dokumentasi mobile.
 - Membedakan pemeriksaan yang lulus dari pengujian yang belum dapat dijalankan.
-
 
 ## Tutorial 09: Navigation, Layouts, Forms, and Input Elements
 
@@ -335,11 +333,6 @@ Pekerjaan dilakukan pada branch `tutorial/09-navigation-forms` dari `main`
 terbaru, dengan commit Conventional Commits bertahap dan pull request ke `main`.
 PR dibiarkan terbuka untuk ditinjau sesuai arahan pemilik. Riwayat sebelumnya
 dipertahankan; `main` tidak diubah langsung.
-
-SCELE meminta **tautan commit hasil akhir**, bukan hanya repository atau PR.
-Menurut halaman tutorial yang diberikan, tenggat Tutorial 09 adalah
-**18 November 2026, pukul 23.59 WIB**, sebagai prasyarat Tugas 8. Publikasi kode
-dan pembuatan PR tidak sama dengan submisi SCELE; submisi belum dilakukan di sini.
 
 Prompt tahap ini: “continue tutorial 9”, disertai isi panduan lengkap dan
 instruksi sebelumnya untuk memakai branch serta PR. Codex membantu memigrasikan
