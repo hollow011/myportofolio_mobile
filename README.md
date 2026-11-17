@@ -46,7 +46,8 @@ Halaman memakai identitas pemilik repositori. Aplikasi belum terhubung ke API Dj
 
 - `lib/main.dart` berisi fungsi `main()`, `MyApp`, dan konfigurasi `MaterialApp`.
   Tema Material 3 memakai warna dasar indigo dan warna sekunder amber.
-- `lib/menu.dart` memisahkan halaman utama dari titik masuk aplikasi.
+- `lib/screens/menu.dart` memisahkan halaman utama dari titik masuk aplikasi
+  (sebelum refactoring Tutorial 09: `lib/menu.dart`).
   `MyHomePage` menggunakan `StatelessWidget` karena halaman tidak menyimpan
   state lokal yang berubah.
 - `InfoCard` menerima `title` dan `content` untuk menampilkan NPM, nama,
@@ -56,7 +57,8 @@ Halaman memakai identitas pemilik repositori. Aplikasi belum terhubung ke API Dj
 - Tombol **Lihat Proyek**, **Tambah Proyek**, dan **Logout** menggunakan
   `InkWell`. Setiap tombol menampilkan pesan
   `Kamu telah menekan tombol <nama tombol>!` melalui `SnackBar`.
-  Pada tahap ini tombol belum melakukan navigasi, penambahan data, atau logout.
+  Pada tahap Tutorial 08/Tugas 7 tombol belum melakukan navigasi, penambahan
+  data, atau logout. Navigasi Tambah Proyek ditambahkan pada Tutorial 09.
 - `Scaffold`, `AppBar`, `Padding`, `Column`, dan `Row` menyusun halaman.
   `Expanded` membagi lebar kartu informasi sesuai ruang yang tersedia;
   `SingleChildScrollView` membuat halaman dapat digulir pada layar pendek.
@@ -248,3 +250,103 @@ submisi SCELE yang belum dibuktikan.
 - Meminta implementasi langsung pada repositori Flutter yang terpisah.
 - Menggunakan README proyek web sebagai acuan struktur dokumentasi mobile.
 - Membedakan pemeriksaan yang lulus dari pengujian yang belum dapat dijalankan.
+
+
+## Tutorial 09: Navigation, Layouts, Forms, and Input Elements
+
+Implementasi mengikuti [Tutorial 09](https://pbp.cs.ui.ac.id/tutorial/tutorial-9.html)
+dengan mempertahankan identitas PBP F, nama lengkap, NPM, dan warna kartu Tugas 7.
+
+### Setup dan struktur
+
+Flutter yang digunakan untuk verifikasi: **3.47.9**, dengan Dart **3.13.7**.
+Dependensi `material_ui` **1.11.1** ditambahkan sesuai petunjuk tutorial dan
+semua impor Material pada aplikasi serta tes menggunakan
+`package:material_ui/material_ui.dart`. Paket ini mendukung SDK yang terpasang,
+sehingga tidak diperlukan upgrade Flutter. `pubspec.lock` mencatat versi yang
+diuji. Setelah checkout branch, jalankan `flutter pub get` sebelum menjalankan
+aplikasi atau tes. Rujukan migrasi: [paket resmi material_ui](https://pub.dev/packages/material_ui).
+
+```text
+lib/
+├── main.dart
+├── screens/
+│   ├── menu.dart
+│   └── project_form.dart
+└── widgets/
+    ├── left_drawer.dart
+    └── project_card.dart
+```
+
+`main.dart` tetap menjadi titik masuk. `MyHomePage`, `InfoCard`, dan model
+`ItemHomepage` berada di `screens/menu.dart`; `ItemCard` dipisahkan ke
+`widgets/project_card.dart`. Seluruh impor aplikasi dan tes telah disesuaikan.
+
+### Implementasi dan alur penggunaan
+
+- `LeftDrawer` tersedia pada halaman utama dan form, dengan header, pilihan
+  **Home**, dan **Add Project**. Pemilihan menu menutup drawer lalu menggunakan
+  `Navigator.pushReplacement`, sehingga mengganti route aktif.
+- Kartu **Tambah Proyek** tetap menampilkan SnackBar lalu menggunakan
+  `Navigator.push` untuk membuka `ProjectFormPage`. Route sebelumnya tetap ada
+  untuk navigasi kembali. **Lihat Proyek** dan **Logout** masih berupa SnackBar.
+- `ProjectFormPage` adalah `StatefulWidget` yang mempertahankan `GlobalKey<FormState>`
+  dan nilai isian selama halaman aktif. `Form` di dalam halaman berisi nama
+  proyek, deskripsi lima baris, kategori, teknologi, dan tautan opsional.
+- Nama dan deskripsi menolak input kosong maupun spasi saja. Kategori menggunakan
+  `DropdownButtonFormField.initialValue` dengan default **Web Development**;
+  pilihannya juga mencakup Mobile Development, Machine Learning, Data Science,
+  dan Other. Teknologi dan tautan dapat dikosongkan; tautan belum divalidasi
+  sebagai URL karena tutorial hanya meminta input teks opsional.
+- **Save** menjalankan validasi. Jika valid, `AlertDialog` menampilkan kelima
+  nilai. **OK** menutup dialog dengan `Navigator.pop`, mereset field, dan
+  mengosongkan variabel isian serta mengembalikan kategori default. Reset juga
+  diuji melalui pengiriman kedua agar data lama tidak terbawa.
+- Form, isi dialog, dan isi header drawer dapat digulir untuk mencegah konten
+  panjang terpotong. Dropdown memakai `isExpanded` agar muat pada layar sempit.
+
+Teks konfirmasi mengikuti tutorial, tetapi **belum ada penyimpanan data**, daftar
+proyek tersimpan, autentikasi, atau integrasi API Django. Menutup halaman
+menghilangkan isian. Form bagian portofolio lain untuk Tugas 8 belum dikerjakan.
+
+### Verifikasi Tutorial 09
+
+Pemeriksaan pada **17 November 2026**:
+
+- `dart format --output=none --set-exit-if-changed lib test halo_burhan.dart`: bersih.
+- `flutter analyze --no-pub`: **No issues found**.
+- `flutter test --no-pub`: **11 tes lulus**.
+- `flutter build web --no-pub`: build rilis web berhasil; Wasm dry run berhasil.
+- `git diff --check`: bersih; tidak ada komentar TODO dalam `lib/` dan `test/`.
+- Uji browser lokal: membuka form dari kartu, menolak isian wajib kosong,
+  memasukkan data, menampilkan kelima nilai di dialog, mereset setelah OK,
+  dan kembali ke Home melalui drawer.
+
+Tes otomatis mencakup profil/warna Tugas 7, SnackBar, layout halaman utama pada
+320×568, 390×844, dan 1440×900, push dan kembali, replacement melalui drawer,
+validasi spasi, pengiriman ulang setelah reset, serta form/dialog panjang pada
+layar 320×568. Tombol kembali diuji melalui event `handlePopRoute`; tombol Back
+browser dan perangkat fisik belum diuji tersendiri. Build Android/iOS dan hot
+reload juga belum diverifikasi dalam tahap ini.
+
+### Git, pengumpulan, dan bantuan AI
+
+Pekerjaan dilakukan pada branch `tutorial/09-navigation-forms` dari `main`
+terbaru, dengan commit Conventional Commits bertahap dan pull request ke `main`.
+PR dibiarkan terbuka untuk ditinjau sesuai arahan pemilik. Riwayat sebelumnya
+dipertahankan; `main` tidak diubah langsung.
+
+SCELE meminta **tautan commit hasil akhir**, bukan hanya repository atau PR.
+Menurut halaman tutorial yang diberikan, tenggat Tutorial 09 adalah
+**18 November 2026, pukul 23.59 WIB**, sebagai prasyarat Tugas 8. Publikasi kode
+dan pembuatan PR tidak sama dengan submisi SCELE; submisi belum dilakukan di sini.
+
+Prompt tahap ini: “continue tutorial 9”, disertai isi panduan lengkap dan
+instruksi sebelumnya untuk memakai branch serta PR. Codex membantu memigrasikan
+impor, memisahkan file, mengimplementasikan form/navigasi, menulis tes, melakukan
+verifikasi browser, dan memperbarui dokumentasi. Penyesuaian terhadap contoh
+meliputi reset variabel agar tidak menyisakan nilai lama dan header yang dapat
+digulir setelah tes menemukan overflow. Pemindahan file serta pembaruan impor
+dilakukan melalui alat penyuntingan otomatis dan diverifikasi dengan analyzer,
+bukan melalui dialog rename IDE. Tautan chat Tutorial 08 di atas tetap
+merupakan riwayat tahap awal, bukan ekspor lengkap percakapan Tutorial 09.
