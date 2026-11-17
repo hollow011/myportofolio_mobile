@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
-import 'package:myportofolio_mobile/menu.dart';
+import 'package:myportofolio_mobile/widgets/project_card.dart';
 
 void main() {
   testWidgets('shows the owner profile and menu', (tester) async {
@@ -54,6 +54,10 @@ void main() {
             find.text('Kamu telah menekan tombol $previous!'),
             findsNothing,
           );
+        }
+        if (label == 'Tambah Proyek') {
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
         }
         previous = label;
       }
