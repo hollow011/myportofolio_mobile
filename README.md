@@ -305,7 +305,7 @@ lib/
 
 Teks konfirmasi mengikuti tutorial, tetapi **belum ada penyimpanan data**, daftar
 proyek tersimpan, autentikasi, atau integrasi API Django. Menutup halaman
-menghilangkan isian. Form bagian portofolio lain untuk Tugas 8 belum dikerjakan.
+menghilangkan isian. Form Edukasi ditambahkan pada tahap Tugas 8 di bawah.
 
 ### Verifikasi Tutorial 09
 
@@ -343,3 +343,130 @@ digulir setelah tes menemukan overflow. Pemindahan file serta pembaruan impor
 dilakukan melalui alat penyuntingan otomatis dan diverifikasi dengan analyzer,
 bukan melalui dialog rename IDE. Tautan chat Tutorial 08 di atas tetap
 merupakan riwayat tahap awal, bukan ekspor lengkap percakapan Tutorial 09.
+
+
+### Tugas 8
+
+1. **Navigasi dan tumpukan halaman.** `Navigator.push()` menambahkan route baru
+   di atas route aktif. Kartu **Tambah Edukasi** memakai metode ini dengan
+   `MaterialPageRoute` menuju `EducationFormPage`, sehingga route Home tetap
+   tersedia untuk tombol kembali perangkat. `Navigator.pop()` menghapus route
+   teratas; pada tombol **Tutup**, context dialog dipakai untuk menutup dialog
+   dan menampilkan form lagi. `Navigator.pushReplacement()` mengganti route
+   teratas, bukan mengosongkan seluruh riwayat. Opsi **Home** pada `LeftDrawer`
+   terlebih dahulu menutup drawer dengan `pop()`, lalu mengganti halaman aktif
+   dengan `MyHomePage` melalui `pushReplacement()`. Alur ini juga menyediakan
+   jalan kembali ke Home saat aplikasi berjalan di browser. Rujukan:
+   [Navigator Flutter](https://api.flutter.dev/flutter/widgets/Navigator-class.html).
+
+2. **Struktur halaman yang konsisten.** `Scaffold` menyediakan kerangka halaman,
+   `AppBar` menampilkan judul dan akses drawer, sedangkan `LeftDrawer` yang sama
+   digunakan oleh Home, Tambah Proyek, dan Tambah Edukasi. Opsi **Home** dan
+   **Add Project** dipertahankan, lalu **Add Education** ditambahkan. AppBar Home
+   dan Edukasi sama-sama mengambil `Theme.of(context).colorScheme.primary`;
+   tombol **Simpan** Edukasi juga memakai warna tersebut dengan teks
+   `colorScheme.onPrimary`. Karena memakai tema aplikasi, perubahan warna tema
+   dapat diterapkan konsisten tanpa menyalin nilai warna ke setiap halaman.
+
+3. **Layout formulir.** Form memakai `Column` agar tiga input dibaca dari atas
+   ke bawah. `SingleChildScrollView` membuat input dan tombol tetap dapat
+   dijangkau ketika tinggi layar berkurang, termasuk saat papan ketik muncul.
+   `Scaffold` mempertahankan perilaku default untuk menyesuaikan ruang badan
+   halaman terhadap keyboard. Padding 16 memberi jarak dari tepi layar,
+   `SizedBox` memisahkan input, dan `CrossAxisAlignment.stretch` membuat input
+   serta tombol mengikuti lebar ruang yang tersedia. Dropdown memakai
+   `isExpanded: true` agar label tidak melampaui lebar input. Dialog menggunakan
+   `scrollable: true` supaya ringkasan panjang tetap bisa dibaca. Tes pada
+   320×568 dengan inset keyboard 250 memastikan **Simpan** bisa digulir ke layar.
+
+4. **Validasi sebelum ringkasan.** `GlobalKey<FormState>` disimpan sekali di
+   state halaman agar tombol **Simpan** dapat mengakses form yang sama.
+   `validate()` menjalankan `validator` setiap field; pesan String menandakan
+   kesalahan, sedangkan `null` berarti valid. Jika ada kegagalan, dialog tidak
+   dibuka. Setelah semua valid, `save()` mengambil nilai teks yang sudah
+   di-`trim()`, lalu `showDialog()` menampilkan seluruh isian. Contohnya,
+   institusi berisi `"   "` ditolak karena kosong setelah trim; 256 karakter
+   ditolak karena model membatasi 255. Jenjang wajib dipilih dari pilihan model.
+   Jenis input atau papan ketik hanya membantu memasukkan data: pengguna masih
+   dapat menempelkan teks kosong, terlalu panjang, atau nilai yang tidak sesuai,
+   sehingga validator tetap diperlukan. Rujukan:
+   [Form validation Flutter](https://docs.flutter.dev/cookbook/forms/validation).
+
+#### Implementasi dan kesesuaian model
+
+Form baru berada di `lib/screens/education_form.dart` sebagai `StatefulWidget`
+dengan `Form` dan `GlobalKey<FormState>`. Field mengikuti tiga atribut wajib
+model `Education` pada `main/models.py` proyek Django `myportofolio`:
+
+| Input | Atribut model | Widget dan aturan |
+| --- | --- | --- |
+| Institusi | `institution` | `TextFormField`; wajib setelah trim, maksimal 255 karakter Unicode |
+| Jenjang Pendidikan | `degree` | `DropdownButtonFormField<String>`; wajib memilih salah satu `DEGREE_CHOICES` |
+| Bidang Studi | `field_of_study` | `TextFormField`; wajib setelah trim, maksimal 255 karakter Unicode |
+
+Pilihan jenjang: `secondary`, `diploma`, `bachelor`, `master`, `doctorate`, dan
+`other`, dengan label sesuai model Django. Panjang teks dihitung melalui
+`runes.length`, sehingga karakter Unicode di luar BMP tidak dihitung sebagai
+dua unit UTF-16. Atribut opsional deskripsi dan website tidak dimasukkan dalam
+cakupan form ini; karena tidak ada input URL atau tanggal, validator URL dan
+date picker tidak diperlukan. Timestamp model dibuat otomatis oleh backend.
+
+Kartu ungu **Tambah Edukasi** ditambahkan tanpa mengganti tiga kartu sebelumnya.
+`ItemCard` tetap berada di `lib/widgets/project_card.dart`, dan navigasi drawer
+berada di `lib/widgets/left_drawer.dart`. Dialog menampilkan ketiga isian;
+**Tutup** kembali ke form dengan nilai tetap tersedia untuk diedit.
+**Simpan hanya menampilkan ringkasan, belum menyimpan ke database atau API.**
+Meninggalkan halaman membuang isian form tersebut.
+
+#### Setup dan verifikasi Tugas 8
+
+Tidak ada dependensi baru. Gunakan setup Flutter dan `material_ui` dari Tutorial
+09. Pada branch `assignment/08-education-form`, jalankan dari root proyek:
+
+```bash
+flutter pub get
+flutter run -d chrome
+flutter analyze --no-pub
+flutter test --no-pub
+flutter build web --no-pub
+```
+
+Hasil pemeriksaan pada **20 November 2026**:
+
+- Analyzer: **No issues found**; build rilis web dan Wasm dry run berhasil.
+- **17 tes lulus**, termasuk enam tes Edukasi: push/kembali, drawer/Home,
+  penolakan input kosong dan spasi, batas 255/256 karakter, isi dialog terbaru
+  setelah pengeditan, serta akses tombol pada 320×568 dengan inset keyboard.
+- Tes profil, warna/SnackBar, layout Home, dan form Proyek sebelumnya tetap lulus.
+- Format Dart dan `git diff --check` bersih.
+- Browser lokal: membuka Edukasi dari kartu dan drawer, menolak ketiga input
+  kosong, menampilkan ringkasan valid, menutup dialog, dan kembali ke Home.
+- Layar sempit dan keyboard diverifikasi melalui widget test; browser diuji
+  pada viewport desktop. Perangkat Android/iOS fisik belum diuji.
+
+#### Git dan keterbukaan penggunaan AI
+
+Branch dibuat dari `main` terbaru yang sudah mencakup merge Tutorial 09 dan
+perubahan README pemilik. Implementasi beserta tes dan dokumentasi dicatat
+sebagai commit Conventional Commits bertahap, dipublikasikan pada repositori
+publik yang sama, lalu diajukan melalui PR ke `main` untuk ditinjau.
+
+Log prompt tahap ini: **“continue assignment 8”**, disertai checklist dan
+pertanyaan reflektif lengkap. Arahan sebelumnya: periksa `main` terbaru,
+pertahankan perubahan pemilik, gunakan branch untuk tiap tugas/tutorial,
+dan buat pull request seperti proyek Django. Strateginya adalah memeriksa
+model Django yang sudah ada, memakai tiga field wajib Edukasi, mengikuti pola
+navigasi Tutorial 09, lalu menguji validasi dan layout sebelum publikasi.
+
+**Codex** membantu membaca model, mengimplementasikan form serta navigasi,
+menulis dan menjalankan tes, melakukan pemeriksaan browser, serta menyusun
+jawaban reflektif dan dokumentasi ini. Tes baru terlebih dahulu menunjukkan
+kegagalan karena halaman/navigasi Edukasi belum tersedia, kemudian lulus setelah
+implementasi. Catatan ini merupakan ringkasan prompt dan pekerjaan, bukan
+transkrip lengkap atau klaim bahwa semua kode telah ditinjau manual oleh pemilik.
+
+Keterbatasan AI: kesesuaian field perlu diperiksa terhadap model nyata, bukan
+menebak atribut dari contoh tugas; panjang teks juga perlu memperhatikan Unicode.
+Validasi sisi Flutter belum menggantikan validasi server saat integrasi API
+nanti dibuat. Hasil tes otomatis dan browser tidak membuktikan perilaku seluruh
+perangkat, dan tidak membuktikan pengumpulan melalui SCELE.
