@@ -15,6 +15,7 @@ void main() {
       'Lihat Proyek',
       'Tambah Proyek',
       'Logout',
+      'Tambah Edukasi',
     ]) {
       expect(find.text(text), findsOneWidget);
     }
@@ -31,8 +32,8 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(cards, hasLength(3));
-    expect(cards.map((card) => card.color).toSet(), hasLength(3));
+    expect(cards, hasLength(4));
+    expect(cards.map((card) => card.color).toSet(), hasLength(4));
     for (final card in cards) {
       expect(card.color, isNotNull);
       final contrast = 1.05 / (card.color!.computeLuminance() + 0.05);
@@ -45,7 +46,13 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const MyApp());
       String? previous;
-      for (final label in ['Lihat Proyek', 'Tambah Proyek', 'Logout']) {
+      for (final label in [
+        'Lihat Proyek',
+        'Tambah Proyek',
+        'Logout',
+        'Tambah Edukasi',
+      ]) {
+        await tester.ensureVisible(find.text(label));
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         expect(find.text('Kamu telah menekan tombol $label!'), findsOneWidget);
@@ -55,7 +62,7 @@ void main() {
             findsNothing,
           );
         }
-        if (label == 'Tambah Proyek') {
+        if (label == 'Tambah Proyek' || label == 'Tambah Edukasi') {
           await tester.binding.handlePopRoute();
           await tester.pumpAndSettle();
         }
