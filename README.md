@@ -470,3 +470,133 @@ menebak atribut dari contoh tugas; panjang teks juga perlu memperhatikan Unicode
 Validasi sisi Flutter belum menggantikan validasi server saat integrasi API
 nanti dibuat. Hasil tes otomatis dan browser tidak membuktikan perilaku seluruh
 perangkat, dan tidak membuktikan pengumpulan melalui SCELE.
+
+### Tutorial 10 — Backend Integration, Authentication, dan CI/CD
+
+Tahap ini menghubungkan **Proyek** ke Django REST Framework. Form Edukasi
+Tugas 8 tetap berupa ringkasan lokal; integrasi Education merupakan lingkup
+Tugas 9. Catatan tahap sebelumnya di atas menggambarkan kondisi pada saat
+tahap tersebut dikerjakan.
+
+#### Menjalankan backend dan Flutter
+
+Backend pendamping: [myportofolio PR #16](https://github.com/hollow011/myportofolio/pull/16).
+Gunakan branch `tutorial/10-token-auth`, pasang requirements, jalankan migrasi,
+lalu hidupkan server Django. Login menggunakan akun superuser portofolio;
+akun biasa dapat login tetapi tidak berhak membuat Proyek.
+
+```bash
+# Di direktori Django, setelah mengaktifkan virtual environment:
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+
+# Di direktori Flutter:
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+
+# Android emulator, default API_BASE_URL=http://10.0.2.2:8000:
+flutter run
+```
+
+Gunakan executable `dart` dari SDK Flutter yang sama dengan `flutter`.
+Pada mesin pengembangan ini SDK berada di `/opt/homebrew/share/flutter/bin`;
+Dart Homebrew terpisah pernah mendahului SDK Flutter di PATH. Versi yang
+diverifikasi adalah Flutter **3.47.9**, Dart **3.13.7**. Karena versi ini memakai
+Material bawaan Flutter, impor tetap `package:flutter/material.dart`.
+
+CORS backend mengizinkan origin HTTP lokal localhost/127.0.0.1 dengan port
+pengembangan. Origin web tambahan dapat diatur melalui environment
+`CORS_ALLOWED_ORIGINS` (dipisahkan koma). Jangan menaruh token atau password
+pada `--dart-define`; `API_BASE_URL` hanya berisi alamat server tanpa slash akhir.
+
+#### Alur data dan autentikasi
+
+- `Project` memakai `@JsonSerializable(fieldRename: FieldRename.snake)`.
+  Field API: `id`, `title`, `description`, `tech_stack`, `project_url`,
+  `project_image_url`. ID dibaca dari server dan tidak dikirim saat POST;
+  gambar yang kosong/null/tidak tersedia menjadi string kosong.
+- `ApiClient` menangani GET daftar, POST proyek, login token, dan logout.
+  Header autentikasi adalah `Authorization: Token <key>`; error server
+  dipetakan menjadi pesan aman tanpa menampilkan HTML atau stack trace.
+- `MultiProvider` menyediakan ApiClient dan AuthState. Token hanya disimpan
+  dalam memori: reload/restart aplikasi mengharuskan login lagi.
+- Daftar publik menggunakan FutureBuilder dengan Future dibuat di initState,
+  pull-to-refresh, status loading/kosong/error dan Retry. Ketuk proyek untuk
+  melihat detail; gambar hanya dibuat jika URL gambar tidak kosong.
+- Tambah Proyek dari kartu maupun drawer memanggil ensureLoggedIn. Form juga
+  memeriksa sesi saat submit. Input wajib, panjang teks, serta URL HTTP/HTTPS
+  diperiksa sebelum POST. Dialog sukses hanya muncul setelah 201 Created
+  dan menampilkan data yang dikembalikan Django.
+- Pada 401, sesi lokal dibersihkan dan login diminta ulang. POST tidak diulang
+  otomatis; pengguna menekan Save lagi setelah login. Pada 403, tampilkan
+  penolakan izin. Otorisasi tetap ditegakkan backend, bukan hanya route guard.
+- Logout mencabut token backend lalu menghapus sesi lokal. Sesi lokal tetap
+  dihapus jika jaringan gagal, tetapi UI menjelaskan bahwa pencabutan di
+  server belum dapat dipastikan. Token DRF bawaan dipakai bersama per akun;
+  pencabutannya juga memengaruhi klien lain yang memakai token sama.
+
+Berkas `*.g.dart` diabaikan Git dan analyzer. Jalankan generator setelah
+mengubah model dan setelah clone. UI tidak menyimpan password.
+
+#### Pemeriksaan dan APK
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build web --release --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+Hasil pada **24 November 2026**:
+
+- **23 tes Flutter lulus**, analyzer tanpa isu, format dan diff bersih.
+  Meliputi JSON/header HTTP, logout gagal, login gagal/dibatalkan, guard kartu
+  dan drawer, 401/login ulang tanpa POST ganda, list/detail/retry/empty refresh,
+  validasi form serta regresi Edukasi dan layout sempit.
+- Backend pendamping: **151 tes Django lulus**, termasuk token login/logout,
+  pencabutan token, izin superuser, session CSRF, dan CORS.
+- Build web rilis dan Wasm dry run berhasil.
+- Browser lokal memakai database uji terpisah: daftar publik memuat sampel
+  data Django, detail terbuka, Add Project meminta login, POST menghasilkan
+  dialog sukses dan proyek baru muncul di daftar. Logout berhasil; database
+  uji setelah logout tidak memiliki token aktif. Data portofolio asli tidak
+  diubah oleh pengujian pembuatan proyek ini.
+- [GitHub Actions run pertama](https://github.com/hollow011/myportofolio_mobile/actions/runs/45340747319)
+  berhasil pada job `build` dan `build_apk`, menghasilkan `app-release-apk`.
+
+Workflow `.github/workflows/main.yaml` berjalan pada PR dan push main.
+Job CI memakai `VeryGoodOpenSource/very_good_workflows@v2` untuk code generation,
+format, analyze, dan tests. Job APK menunggu CI berhasil, mengompilasi APK
+release, lalu mengunggah artifact **app-release-apk** ke halaman Actions.
+
+APK tutorial memakai alamat emulator `http://10.0.2.2:8000`, izin cleartext
+untuk pengembangan lokal, dan konfigurasi signing debug bawaan proyek.
+Ini bukan distribusi produksi. Untuk produksi, gunakan backend HTTPS,
+ubah `API_BASE_URL`, nonaktifkan cleartext, dan siapkan signing rilis sendiri.
+Perangkat Android/iOS fisik dan deployment produksi belum diuji.
+
+#### Git dan penggunaan AI
+
+Branch `tutorial/10-backend-integration` dibuat dari main terbaru setelah
+Tugas 8, dengan [PR #3](https://github.com/hollow011/myportofolio_mobile/pull/3)
+dibiarkan terbuka untuk review. Backend dikerjakan pada branch terpisah.
+Tidak ada perubahan riwayat atau backdating commit.
+
+Log prompt: **“continue”**, disertai panduan Tutorial 10 lengkap.
+Codex membantu mencocokkan serializer Django, mengimplementasikan jaringan
+dan autentikasi, menulis/menjalankan tes, menguji browser lokal, menyiapkan CI,
+dan menyusun dokumentasi. Strateginya: periksa kode dan main terbaru,
+pertahankan fitur Tugas 8, terapkan kontrak API yang sudah ada, lalu verifikasi.
+
+Pengujian menemukan dua kesalahan implementasi yang diperbaiki: callback
+setState saat refresh sempat mengembalikan Future, dan navigasi drawer
+sempat memakai context yang sudah dilepas setelah login. Tes regresi
+memastikan kedua alur berjalan. Keluaran AI tidak dianggap benar sebelum
+analyzer, tes, browser, dan CI diperiksa. Catatan ini ringkasan prompt dan
+pekerjaan, bukan transkrip lengkap atau klaim review manual pemilik.
+
+Pengumpulan tetap melalui **tautan commit GitHub** di SCELE sebelum
+**25 November 2026 pukul 23.59 WIB**. Push/PR bukan bukti pengumpulan SCELE.

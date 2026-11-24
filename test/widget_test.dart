@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
+
+import 'test_app.dart';
+
 import 'package:myportofolio_mobile/widgets/project_card.dart';
 
 void main() {
@@ -44,7 +47,7 @@ void main() {
   testWidgets(
     'each menu button shows its message and replaces the previous one',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(testApp());
       String? previous;
       for (final label in [
         'Lihat Proyek',
@@ -55,14 +58,21 @@ void main() {
         await tester.ensureVisible(find.text(label));
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
-        expect(find.text('Kamu telah menekan tombol $label!'), findsOneWidget);
+        expect(
+          find.text(
+            label == 'Logout'
+                ? 'Logout berhasil.'
+                : 'Kamu telah menekan tombol $label!',
+          ),
+          findsOneWidget,
+        );
         if (previous != null) {
           expect(
             find.text('Kamu telah menekan tombol $previous!'),
             findsNothing,
           );
         }
-        if (label == 'Tambah Proyek' || label == 'Tambah Edukasi') {
+        if (label != 'Logout') {
           await tester.binding.handlePopRoute();
           await tester.pumpAndSettle();
         }
