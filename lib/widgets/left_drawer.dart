@@ -1,3 +1,4 @@
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
@@ -69,9 +70,23 @@ class LeftDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.school_outlined),
-            title: const Text('Add Education'),
+            title: const Text('Education'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.pushReplacement(
+                pageContext,
+                MaterialPageRoute(builder: (_) => const EducationListScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_circle_outline),
+            title: const Text('Add Education'),
+            onTap: () async {
+              Navigator.pop(context);
+              if (!await ensureLoggedIn(pageContext) || !pageContext.mounted) {
+                return;
+              }
               Navigator.pushReplacement(
                 pageContext,
                 MaterialPageRoute(
