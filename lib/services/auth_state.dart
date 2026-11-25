@@ -13,14 +13,18 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearSession() {
+    _token = null;
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     final current = _token;
     if (current == null) return;
     try {
       await _apiClient.logout(token: current);
     } finally {
-      _token = null;
-      notifyListeners();
+      clearSession();
     }
   }
 }

@@ -15,6 +15,7 @@ void main() {
       'Mohammad Adzka Aulia',
       'PBP F',
       'Selamat datang di MyPortfolio Mobile!',
+      'Lihat Edukasi',
       'Lihat Proyek',
       'Tambah Proyek',
       'Logout',
@@ -35,8 +36,8 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(cards, hasLength(4));
-    expect(cards.map((card) => card.color).toSet(), hasLength(4));
+    expect(cards, hasLength(5));
+    expect(cards.map((card) => card.color).toSet(), hasLength(5));
     for (final card in cards) {
       expect(card.color, isNotNull);
       final contrast = 1.05 / (card.color!.computeLuminance() + 0.05);
@@ -50,6 +51,7 @@ void main() {
       await tester.pumpWidget(testApp());
       String? previous;
       for (final label in [
+        'Lihat Edukasi',
         'Lihat Proyek',
         'Tambah Proyek',
         'Logout',

@@ -1,3 +1,5 @@
+import 'package:myportofolio_mobile/models/education.dart';
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -13,8 +15,7 @@ class ApiException implements Exception {
     0 => 'Tidak dapat menghubungi server. Periksa koneksi dan coba lagi.',
     400 => 'Data atau kredensial tidak valid (400). Periksa isian Anda.',
     401 => 'Sesi tidak valid (401). Silakan login kembali.',
-    403 =>
-      'Akses ditolak (403). Hanya pemilik portofolio dapat menambah proyek.',
+    403 => 'Akses ditolak (403). Akun ini tidak memiliki izin untuk tindakan tersebut.',
     _ => 'Permintaan gagal ($statusCode). Silakan coba lagi.',
   };
 
@@ -80,6 +81,29 @@ class ApiClient {
     );
     if (response.statusCode != 201) throw ApiException(response.statusCode);
     return Project.fromJson(
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+    );
+  }
+
+  Future<List<Education>> getEducation() async {
+    final response = await _request('/api/v1/education/');
+    return (jsonDecode(utf8.decode(response.bodyBytes)) as List<dynamic>)
+        .map((item) => Education.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<Education> createEducation(
+    Education entry, {
+    required String token,
+  }) async {
+    final response = await _request(
+      '/api/v1/education/',
+      post: true,
+      token: token,
+      body: entry.toJson(),
+    );
+    if (response.statusCode != 201) throw ApiException(response.statusCode);
+    return Education.fromJson(
       jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
     );
   }

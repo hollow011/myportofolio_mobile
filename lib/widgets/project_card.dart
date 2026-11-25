@@ -1,3 +1,4 @@
+import 'package:myportofolio_mobile/screens/education_list_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/screens/project_list_screen.dart';
@@ -40,7 +41,13 @@ class ItemCard extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (context) => const ProjectFormPage()),
             );
+          } else if (item.name == 'Lihat Edukasi') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const EducationListScreen()),
+            );
           } else if (item.name == 'Tambah Edukasi') {
+            if (!await ensureLoggedIn(context) || !context.mounted) return;
             Navigator.push(
               context,
               MaterialPageRoute(

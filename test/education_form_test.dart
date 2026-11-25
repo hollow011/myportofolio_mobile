@@ -1,11 +1,18 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:myportofolio_mobile/main.dart';
+
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+
+import 'test_app.dart';
 
 Finder field(String label) => find.widgetWithText(TextFormField, label);
 
-Future<void> openForm(WidgetTester tester) async {
-  await tester.pumpWidget(const MyApp());
+Future<void> openForm(WidgetTester tester, {ApiClient? api}) async {
+  await tester.pumpWidget(testApp(api: api));
   await tester.ensureVisible(find.text('Tambah Edukasi'));
   await tester.tap(find.text('Tambah Edukasi'));
   await tester.pumpAndSettle();
@@ -42,7 +49,7 @@ void main() {
   testWidgets(
     'shared drawer retains project and home routes alongside education',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(testApp());
       await tester.tap(find.byTooltip('Open navigation menu'));
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
@@ -97,9 +104,38 @@ void main() {
   });
 
   testWidgets(
-    'summary shows trimmed current values and closes back to editable form',
+    'confirmed write sends editable fields and opens a freshly fetched list',
     (tester) async {
-      await openForm(tester);
+      Map<String, dynamic>? saved;
+      final api = ApiClient(
+        client: MockClient((request) async {
+          expect(request.url.path, '/api/v1/education/');
+          if (request.method == 'POST') {
+            expect(request.headers['authorization'], 'Token test-token');
+            final body = jsonDecode(request.body) as Map<String, dynamic>;
+            expect(body.keys.toSet(), {
+              'institution',
+              'degree',
+              'field_of_study',
+              'description',
+              'website',
+              'is_current',
+            });
+            expect(body['degree'], 'bachelor');
+            expect(body['field_of_study'], 'Ilmu Komputer');
+            expect(body['institution'], 'Universitas Indonesia');
+            saved = {
+              ...body,
+              'id': '123',
+              'degree_display': "Bachelor's degree",
+            };
+            return http.Response(jsonEncode(saved), 201);
+          }
+          expect(request.headers['authorization'], isNull);
+          return http.Response(jsonEncode([saved!]), 200);
+        }),
+      );
+      await openForm(tester, api: api);
       await tester.enterText(field('Institusi'), '  Universitas Indonesia  ');
       await tester.enterText(field('Bidang Studi'), '  Ilmu Komputer  ');
       await selectDegree(tester, "Bachelor's degree");
@@ -110,15 +146,39 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Bidang Studi: Ilmu Komputer'), findsOneWidget);
-      await tester.tap(find.text('Tutup'));
+      await tester.tap(find.text('Lihat Edukasi'));
       await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsNothing);
-      await tester.enterText(field('Bidang Studi'), 'Data Science');
-      await save(tester);
-      expect(find.text('Bidang Studi: Data Science'), findsOneWidget);
-      expect(find.text('Bidang Studi: Ilmu Komputer'), findsNothing);
+      await tester.tap(find.text('Universitas Indonesia'));
+      await tester.pumpAndSettle();
+      expect(find.text('Detail Edukasi'), findsOneWidget);
+      expect(find.text('Ilmu Komputer'), findsOneWidget);
     },
   );
+
+  testWidgets('revoked Education token requests login and retains the draft', (
+    tester,
+  ) async {
+    var attempts = 0;
+    final api = ApiClient(
+      client: MockClient((req) async {
+        expect(req.url.path, '/api/v1/education/');
+        attempts++;
+        return http.Response('', 401);
+      }),
+    );
+    await openForm(tester, api: api);
+    await tester.enterText(field('Institusi'), 'UI');
+    await tester.enterText(field('Bidang Studi'), 'CS');
+    await selectDegree(tester, 'Diploma');
+    await save(tester);
+    expect(field('Password'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('UI'), findsOneWidget);
+    await save(tester);
+    expect(field('Password'), findsOneWidget);
+    expect(attempts, 1);
+  });
 
   testWidgets('save remains reachable on a phone with keyboard insets', (
     tester,
@@ -137,7 +197,7 @@ void main() {
     await save(tester);
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await tester.tap(find.text('Tutup'));
+    await tester.tap(find.text('Lihat Edukasi'));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
   });
