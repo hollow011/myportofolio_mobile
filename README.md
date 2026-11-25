@@ -1,5 +1,7 @@
 # My Portfolio Mobile
 
+[![CI](https://github.com/hollow011/myportofolio_mobile/actions/workflows/main.yaml/badge.svg)](https://github.com/hollow011/myportofolio_mobile/actions/workflows/main.yaml)
+
 Aplikasi mobile portofolio Mohammad Adzka Aulia untuk mata kuliah
 Pemrograman Berbasis Platform (PBP). Proyek ini dibangun menggunakan Flutter
 dan Dart sebagai kelanjutan versi web
@@ -600,3 +602,41 @@ pekerjaan, bukan transkrip lengkap atau klaim review manual pemilik.
 
 Pengumpulan tetap melalui **tautan commit GitHub** di SCELE sebelum
 **25 November 2026 pukul 23.59 WIB**. Push/PR bukan bukti pengumpulan SCELE.
+
+### Assignment 9
+
+1. Model `Education` menjaga kontrak JSON di satu tempat. Dengan `FieldRename.snake`, properti Dart `fieldOfStudy` dikirim sebagai `field_of_study`. Jika widget membuat map berisi `fieldOfStudy`, Django menganggap bidang studi wajib belum diisi dan mengembalikan 400. Anotasi `@JsonKey(includeToJson: false)` membuat UUID dari server tetap dapat dibaca dari respons, tetapi tidak ikut dikirim saat menyimpan entri. Aturan yang sama berlaku untuk label jenjang dan jumlah bintang yang dihitung server.
+
+2. Daftar meminta data di `initState()` dan menyimpan Future tersebut. Flutter dapat memanggil `build()` berkali-kali, misalnya saat ukuran layar berubah. Membuat Future di sana akan mengulang GET dan dapat mengembalikan layar ke indikator pemuatan. Refresh dan Retry secara eksplisit mengganti Future. Daftar kosong adalah hasil GET yang sah. Dengan `ApiException`, layar bisa membedakan daftar kosong dari kegagalan server, sedangkan form bisa menangani 401 dengan meminta login kembali dan mempertahankan isian.
+
+3. Pada web Django, browser mengirim cookie sesi secara otomatis, sehingga operasi tulis berbasis sesi membutuhkan perlindungan CSRF. Flutter menyimpan token DRF di memori dan mengirim header `Authorization: Token <key>` untuk membuat entri. Pembacaan Education bersifat publik. Login membuktikan identitas pengguna, sedangkan izin membuat Education diperiksa terpisah oleh Django dan membutuhkan superuser. Logout mencabut token yang digunakan Flutter. Backend juga mendukung sesi agar pengguna situs Django tetap bisa memakai alur login browser.
+
+4. Job `build` memakai `very_good_workflows` untuk menyiapkan dependensi, menjalankan generator, memeriksa format Dart, menganalisis kode, dan menjalankan tes dengan coverage. Ambang coverage 0 mengizinkan cakupan rendah, tetapi tes yang gagal tetap menggagalkan job. Setelah pemeriksaan berhasil, `build_apk` menyiapkan Flutter di runner baru, memasang dependensi, mengulang generator, membangun APK release, lalu mengunggah `app-release-apk`. Berkas `*.g.dart` diabaikan Git dan analyzer karena berasal dari model. Kedua job harus membuatnya kembali karena masing-masing mendapat checkout bersih.
+
+#### Menjalankan integrasi Education
+
+Gunakan [revisi backend Django yang diuji](https://github.com/hollow011/myportofolio/tree/b71457f8fb62e6420c6b0bc4d0fea51fc696bd64). Dari direktori backend, aktifkan virtual environment lalu jalankan:
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser  # hanya jika belum punya akun pemilik
+python manage.py runserver
+```
+
+Dari direktori Flutter, gunakan Flutter 3.47.9 dan Dart bawaannya:
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter test
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+Untuk emulator Android, jalankan `flutter run`. Alamat default `http://10.0.2.2:8000` mengarah ke Django di komputer host. APK dari CI memakai alamat default ini. Untuk perangkat fisik, gunakan alamat backend yang dapat dijangkau perangkat melalui `--dart-define=API_BASE_URL=...` saat membangun aplikasi.
+
+Buka **Lihat Edukasi** dari beranda atau **Education** dari drawer tanpa login. Ketuk entri untuk melihat detailnya. Buka **Tambah Edukasi**, login sebagai superuser, isi form, lalu simpan. Dari konfirmasi, pilih **Lihat Edukasi** untuk memuat daftar terbaru. Entri juga dapat diperiksa melalui `/education/` di situs Django. Jika token telah dicabut, form meminta login kembali dan menyimpan isian sampai pengguna menekan Simpan lagi.
+
+#### Penggunaan AI
+
+Codex digunakan dengan prompt “continue” dan checklist tugas. Codex membaca serializer dan aturan izin backend, menghubungkan form Assignment 8, menulis tes widget, dan menyusun bagian README ini. Contoh Tutorial 10 membahas Project, sedangkan Education menggunakan kode jenjang saat POST dan mengembalikan label jenjang saat GET. Perbedaan ini diperiksa pada serializer. Tes widget memeriksa pengiriman form dan login ulang setelah 401. Pemeriksaan terpisah memakai Django dengan basis data uji untuk menyimpan entri, membacanya kembali lewat API dan halaman web, lalu memastikan token yang dicabut ditolak.
