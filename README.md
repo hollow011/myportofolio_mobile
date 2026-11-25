@@ -12,6 +12,7 @@ dan Dart sebagai kelanjutan versi web
 - Nama: Mohammad Adzka Aulia
 - NPM: 2506657005
 - Kelas: PBP F
+- Riwayat AI: https://chatgpt.com/s/cx_6b06e8a5391481918095068f1b61d517
 
 ## Menjalankan Proyek
 
